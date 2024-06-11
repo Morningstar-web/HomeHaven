@@ -65,6 +65,16 @@
                 const guests = bookingForm.guests.value;
                 const listing = bookingForm.listing.value;
 
+                if (!name || !email || !checkIn || !checkOut || !guests) {
+                    alert('Please fill out all fields.');
+                    return;
+                }
+
+                if (new Date(checkIn) >= new Date(checkOut)) {
+                    alert('Check-out date must be after check-in date.');
+                    return;
+                }
+
                 const booking = { name, email, checkIn, checkOut, guests, listing };
                 localStorage.setItem('pendingBooking', JSON.stringify(booking));
                 window.location.href = 'register.html';
