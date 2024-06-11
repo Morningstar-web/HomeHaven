@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeHaven - Bookings</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <h1>Your Bookings</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="bookings.html">Your Bookings</a></li>
+                <li><a href="#" id="logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h2>Current Bookings</h2>
+        <div id="bookings-list"></div>
+
+        <!-- Message Form for Guests -->
+        <div id="message-form-container" style="display: none;">
+            <h2>Send a Message to Admin</h2>
+            <form id="message-form">
+                <textarea id="guest-message" rows="4" placeholder="Write your message here..." required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+
+        <!-- Messages for Admin -->
+        <div id="messages-container" style="display: none;">
+            <h2>Messages from Guests</h2>
+            <div id="messages-list"></div>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 HomeHaven. All rights reserved.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookingsList = document.getElementById('bookings-list');
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+
+            if (!loggedInUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+            // Display bookings
+            if (bookings.length === 0) {
+                bookingsList.textContent = 'No bookings found.';
+            } else {
+                bookings.forEach(function(booking, index) {
+                    if (loggedInUser.role === 'admin' || booking.email === loggedInUser.email) {
+                        const bookingDiv = document.createElement('div');
+                        bookingDiv.className = 'booking';
+                        bookingDiv.innerHTML = `
+                            <p><strong>Name:</strong> ${booking.name}</p>
+                            <p><strong>Email:</strong> ${booking.email}</p>
+                            <p><strong>Check-in:</strong> ${booking.checkIn}</p>
+                            <p><strong>Check-out:</strong> ${booking.checkOut}</p>
+                            <p><strong>Guests:</strong> ${booking.guests}</p>
+                            <p><strong>Listing:</strong> ${booking.listing}</p>
+                            ${loggedInUser.role === 'admin' ? '<button class="delete-booking">Delete Booking</button><textarea placeholder="Message to guest..."></textarea>' : '<button class="edit-booking">Edit Booking</button>'}
+                        `;
+                        bookingsList.appendChild(bookingDiv);
+
+                        // Add delete functionality for admin
+                        if (loggedInUser.role === 'admin') {
+                            const deleteButton = bookingDiv.querySelector('.delete-booking');
+                            deleteButton.addEventListener('click', function() {
+                                const reason = prompt('Reason for deletion:');
+                                if (reason) {
+                                    alert(`Booking deleted for reason: ${reason}`);
+                                    // Remove booking from local storage
+                                    const updatedBookings = bookings.filter((b, i) => i !== index);
+                                    localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        // Add edit functionality for guests
+                        if (loggedInUser.role === 'guest') {
+                            const editButton = bookingDiv.querySelector('.edit-booking');
+                            editButton.addEventListener('click', function() {
+                                const newCheckIn = prompt('New Check-in Date:', booking.checkIn);
+                                const newCheckOut = prompt('New Check-out Date:', booking.checkOut);
+                                const newGuests = prompt('New Number of Guests:', booking.guests);
+
+                                if (newCheckIn && newCheckOut && newGuests) {
+                                    booking.checkIn = newCheckIn;
+                                    booking.checkOut = newCheckOut;
+                                    booking.guests = newGuests;
+
+                                    // Update local storage
+                                    bookings[index] = booking;
+                                    localStorage.setItem('bookings', JSON.stringify(bookings));
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Display message form for guests
+            if (loggedInUser.role === 'guest') {
+                document.getElementById('message-form-container').style.display = 'block';
+
+                const messageForm = document.getElementById('message-form');
+                messageForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+
+                    const messageContent = document.getElementById('guest-message').value;
+
+                    if (messageContent) {
+                        const newMessage = {
+                            from: loggedInUser.email,
+                            content: messageContent,
+                            timestamp: new Date().toISOString()
+                        };
+
+                        messages.push(newMessage);
+                        localStorage.setItem('messages', JSON.stringify(messages));
+                        alert('Message sent to admin.');
+                        messageForm.reset();
+                    }
+                });
+            }
+
+            // Display messages for admin
+            if (loggedInUser.role === 'admin') {
+                document.getElementById('messages-container').style.display = 'block';
+
+                const messagesList = document.getElementById('messages-list');
+
+                if (messages.length === 0) {
+                    messagesList.textContent = 'No messages from guests.';
+                } else {
+                    messages.forEach(function(message) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message';
+                        messageDiv.innerHTML = `
+                            <p><strong>From:</strong> ${message.from}</p>
+                            <p><strong>Message:</strong> ${message.content}</p>
+                            <p><small><strong>Timestamp:</strong> ${message.timestamp}</small></p>
+                        `;
+                        messagesList.appendChild(messageDiv);
+                    });
+                }
+            }
+
+            // Logout functionality
+            const logoutLink = document.getElementById('logout-link');
+            logoutLink.addEventListener('click', function() {
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+</html>

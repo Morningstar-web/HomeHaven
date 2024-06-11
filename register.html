@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeHaven - Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <h1>HomeHaven Registration</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h2>Create Your Account</h2>
+        <form id="register-form">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role">
+                <option value="guest">Guest</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <div id="admin-code-section" style="display:none;">
+                <label for="admin-code">Admin Code:</label>
+                <input type="password" id="admin-code" name="admin-code">
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+        <p id="register-message" style="color: red;"></p>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 HomeHaven. All rights reserved.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('register-form');
+            const registerMessage = document.getElementById('register-message');
+            const roleSelect = document.getElementById('role');
+            const adminCodeSection = document.getElementById('admin-code-section');
+
+            roleSelect.addEventListener('change', function() {
+                if (roleSelect.value === 'admin') {
+                    adminCodeSection.style.display = 'block';
+                } else {
+                    adminCodeSection.style.display = 'none';
+                }
+            });
+
+            registerForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const username = registerForm.username.value;
+                const email = registerForm.email.value;
+                const password = registerForm.password.value;
+                const role = registerForm.role.value;
+                const adminCode = registerForm['admin-code'].value;
+
+                const correctAdminCode = 'secureadmincode'; // Change this to your desired admin code
+                if (!username || !email || !password || (role === 'admin' && !adminCode)) {
+                    registerMessage.textContent = 'All fields are required.';
+                    return;
+                }
+
+                if (role === 'admin' && adminCode !== correctAdminCode) {
+                    registerMessage.textContent = 'Invalid admin code.';
+                    return;
+                }
+
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                if (users.some(user => user.email === email)) {
+                    registerMessage.textContent = 'An account with this email already exists.';
+                    return;
+                }
+
+                users.push({ username, email, password, role });
+                localStorage.setItem('users', JSON.stringify(users));
+
+                const pendingBooking = localStorage.getItem('pendingBooking');
+                if (pendingBooking) {
+                    window.location.href = 'login.html?pendingBooking=true';
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

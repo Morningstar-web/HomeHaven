@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeHaven - Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <h1>Booking for HomeHaven</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <h2>Book Your Stay</h2>
+        <!-- Success Message -->
+        <div id="success-message" style="display:none; color: green; margin-bottom: 20px;"></div>
+        <!-- Booking Form -->
+        <form id="booking-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="check-in">Check-in Date:</label>
+            <input type="date" id="check-in" name="check-in" required>
+
+            <label for="check-out">Check-out Date:</label>
+            <input type="date" id="check-out" name="check-out" required>
+
+            <label for="guests">Number of Guests:</label>
+            <input type="number" id="guests" name="guests" required>
+
+            <!-- Hidden input to capture the listing name -->
+            <input type="hidden" id="listing" name="listing">
+
+            <button type="submit">Book Now</button>
+        </form>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2024 HomeHaven. All rights reserved.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookingForm = document.getElementById('booking-form');
+            bookingForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const name = bookingForm.name.value;
+                const email = bookingForm.email.value;
+                const checkIn = bookingForm['check-in'].value;
+                const checkOut = bookingForm['check-out'].value;
+                const guests = bookingForm.guests.value;
+                const listing = bookingForm.listing.value;
+
+                const booking = { name, email, checkIn, checkOut, guests, listing };
+                localStorage.setItem('pendingBooking', JSON.stringify(booking));
+                window.location.href = 'register.html';
+            });
+
+            const params = new URLSearchParams(window.location.search);
+            const listing = params.get('listing') || localStorage.getItem('pendingBooking') && JSON.parse(localStorage.getItem('pendingBooking')).listing;
+            document.getElementById('listing').value = listing;
+        });
+    </script>
+</body>
+</html>
