@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('HomeHaven is ready!');
 
+    // Test
     // Booking form submission handler
     const bookingForm = document.getElementById('booking-form');
     if (bookingForm) {
